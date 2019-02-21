@@ -75,11 +75,13 @@ import L1Trigger.L1THGCalUtilities.clustering3d as clustering3d
 chain = HGCalTriggerChain()
 chain.register_vfe("Floatingpoint7", lambda p : vfe.create_compression(p, 4, 3, True))
 chain.register_concentrator("Supertriggercell", concentrator.create_supertriggercell)
+chain.register_concentrator("Threshold", concentrator.create_threshold)
 chain.register_concentrator("Bestchoice", lambda p,i : concentrator.create_bestchoice(p,i, triggercells=12))
 chain.register_backend1("Dummy", clustering2d.create_dummy)
 chain.register_backend2("Histothreshold", clustering3d.create_histoThreshold)
 
 chain.register_chain('Floatingpoint7', 'Supertriggercell', 'Dummy', 'Histothreshold')
+chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'Histothreshold')
 chain.register_chain('Floatingpoint7', 'Bestchoice', 'Dummy', 'Histothreshold')
 
 process = chain.create_sequences(process)
