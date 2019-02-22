@@ -21,7 +21,10 @@ class HGCalTriggerChain:
     def register_backend2(self, name, generator):
         self.backend2[name] = generator
 
-    def register_chain(self, vfe, concentrator, backend1, backend2, ntuple=None):
+    def register_ntuple(self, name, generator):
+        self.ntuple[name] = generator
+
+    def register_chain(self, vfe, concentrator, backend1, backend2, ntuple=''):
         if not vfe in self.vfe: 
             raise KeyError('{} not registered as VFE producer'.format(vfe))
         if not concentrator in self.concentrator: 
@@ -30,9 +33,10 @@ class HGCalTriggerChain:
             raise KeyError('{} not registered as backend1 producer'.format(backend1))
         if not backend2 in self.backend2: 
             raise KeyError('{} not registered as backend2 producer'.format(backend2))
-        #  if not ntuple in self.ntuple: 
-            #  raise KeyError('{} not registered as ntuplizer'.format(ntuple))
-        self.chain.append( (vfe, concentrator, backend1, backend2) )
+        if ntuple!='' and not ntuple in self.ntuple: 
+            raise KeyError('{} not registered as ntuplizer'.format(ntuple))
+        self.chain.append( (vfe, concentrator, backend1, backend2, ntuple) )
+    
 
     def create_sequences(self, process):
         tmp = cms.SequencePlaceholder("tmp")
@@ -40,10 +44,13 @@ class HGCalTriggerChain:
         concentrator_sequence = cms.Sequence(tmp)
         backend1_sequence = cms.Sequence(tmp)
         backend2_sequence = cms.Sequence(tmp)
-        for vfe,concentrator,backend1,backend2 in self.chain:
+        ntuple_sequence = cms.Sequence(tmp)
+        for vfe,concentrator,backend1,backend2,ntuple in self.chain:
             concentrator_name = '{0}{1}'.format(vfe, concentrator)
             backend1_name = '{0}{1}{2}'.format(vfe, concentrator, backend1)
             backend2_name = '{0}{1}{2}{3}'.format(vfe, concentrator, backend1, backend2)
+            ntuple_name = '{0}{1}{2}{3}{4}'.format(vfe, concentrator, backend1, backend2, ntuple)
+            ntuple_inputs = [concentrator_name, backend1_name, backend2_name]
             if not hasattr(process, vfe):
                 setattr(process, vfe, self.vfe[vfe](process))
                 vfe_sequence *= getattr(process, vfe)
@@ -56,12 +63,18 @@ class HGCalTriggerChain:
             if not hasattr(process, backend2_name):
                 setattr(process, backend2_name, self.backend2[backend2](process, backend1_name))
                 backend2_sequence *= getattr(process, backend2_name)
+            if ntuple!='' and not hasattr(process, ntuple_name):
+                setattr(process, ntuple_name, self.ntuple[ntuple](process, ntuple_inputs))
+                ntuple_sequence *= getattr(process, ntuple_name)
         vfe_sequence.remove(tmp)
         concentrator_sequence.remove(tmp)
         backend1_sequence.remove(tmp)
         backend2_sequence.remove(tmp)
+        ntuple_sequence.remove(tmp)
         process.globalReplace('hgcalVFE', vfe_sequence)
         process.globalReplace('hgcalConcentrator', concentrator_sequence)
         process.globalReplace('hgcalBackEndLayer1', backend1_sequence)
         process.globalReplace('hgcalBackEndLayer2', backend2_sequence)
+        if ntuple!='':
+            process.globalReplace('hgcalTriggerNtuples', ntuple_sequence)
         return process

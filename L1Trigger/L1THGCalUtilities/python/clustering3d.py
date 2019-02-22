@@ -8,21 +8,6 @@ binSums = cms.vuint32(13,               #0
                       3, 3, 3, 3, 3, 3, 3, 3  # 28 - 35
                       )
 
-def create_distance(process, inputs,
-        distance=6.,# cm
-        seed_threshold=5.,# MipT
-        cluster_threshold=2.# MipT
-        ):
-    producer = process.hgcalBackEndLayer1Producer.clone() 
-    producer.ProcessorParameters.C2d_parameters.seeding_threshold_silicon = cms.double(seed_threshold) 
-    producer.ProcessorParameters.C2d_parameters.seeding_threshold_scintillator = cms.double(seed_threshold) 
-    producer.ProcessorParameters.C2d_parameters.clustering_threshold_silicon = cms.double(cluster_threshold) 
-    producer.ProcessorParameters.C2d_parameters.clustering_threshold_scintillator = cms.double(cluster_threshold) 
-    producer.ProcessorParameters.C2d_parameters.dR_cluster = cms.double(distance) 
-    producer.ProcessorParameters.C2d_parameters.clusterType = cms.string('dRC2d') 
-    producer.InputTriggerCells = cms.InputTag('{}:HGCalConcentratorProcessorSelection'.format(inputs))
-    return producer
-
 
 def create_distance(process, inputs,
         distance=0.01

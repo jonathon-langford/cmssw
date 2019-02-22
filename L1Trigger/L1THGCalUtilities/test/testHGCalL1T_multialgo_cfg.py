@@ -66,11 +66,13 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
 # load HGCAL TPG simulation
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
+process.load('L1Trigger.L1THGCalUtilities.hgcalTriggerNtuples_cff')
 from L1Trigger.L1THGCalUtilities.hgcalTriggerChain import HGCalTriggerChain
 import L1Trigger.L1THGCalUtilities.vfe as vfe
 import L1Trigger.L1THGCalUtilities.concentrator as concentrator
 import L1Trigger.L1THGCalUtilities.clustering2d as clustering2d
 import L1Trigger.L1THGCalUtilities.clustering3d as clustering3d
+import L1Trigger.L1THGCalUtilities.customNtuples as ntuple
 
 chain = HGCalTriggerChain()
 chain.register_vfe("Floatingpoint7", lambda p : vfe.create_compression(p, 4, 3, True))
@@ -79,10 +81,12 @@ chain.register_concentrator("Threshold", concentrator.create_threshold)
 chain.register_concentrator("Bestchoice", lambda p,i : concentrator.create_bestchoice(p,i, triggercells=12))
 chain.register_backend1("Dummy", clustering2d.create_dummy)
 chain.register_backend2("Histothreshold", clustering3d.create_histoThreshold)
+ntuple_list = ['event', 'gen', 'multicluster']
+chain.register_ntuple("MultiClustersNtuple", lambda p,i : ntuple.create_ntuple(p,i, ntuple_list))
 
-chain.register_chain('Floatingpoint7', 'Supertriggercell', 'Dummy', 'Histothreshold')
-chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'Histothreshold')
-chain.register_chain('Floatingpoint7', 'Bestchoice', 'Dummy', 'Histothreshold')
+chain.register_chain('Floatingpoint7', 'Supertriggercell', 'Dummy', 'Histothreshold', 'MultiClustersNtuple')
+chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'Histothreshold', 'MultiClustersNtuple')
+chain.register_chain('Floatingpoint7', 'Bestchoice', 'Dummy', 'Histothreshold', 'MultiClustersNtuple')
 
 process = chain.create_sequences(process)
 
@@ -91,7 +95,9 @@ process.hgcalTriggerPrimitives.remove(process.hgcalTowerMap)
 process.hgcalTriggerPrimitives.remove(process.hgcalTower)
 
 process.hgcl1tpg_step = cms.Path(process.hgcalTriggerPrimitives)
+process.ntuple_step = cms.Path(process.hgcalTriggerNtuples)
 print(process.hgcl1tpg_step)
+print(process.ntuple_step)
 
 # load ntuplizer
 #process.load('L1Trigger.L1THGCalUtilities.hgcalTriggerNtuples_cff')
@@ -112,7 +118,7 @@ print(process.hgcl1tpg_step)
 #process.ntuple_step = cms.Path(process.hgcalTriggerNtuples)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.hgcl1tpg_step)#, process.ntuple_step)
+process.schedule = cms.Schedule(process.hgcl1tpg_step, process.ntuple_step)
 
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
