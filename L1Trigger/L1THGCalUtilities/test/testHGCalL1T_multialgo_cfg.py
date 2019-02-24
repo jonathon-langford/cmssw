@@ -82,6 +82,11 @@ chain.register_concentrator("Threshold", concentrator.create_threshold)
 chain.register_concentrator("Bestchoice", lambda p,i : concentrator.create_bestchoice(p,i, triggercells=12))
 chain.register_backend1("Dummy", clustering2d.create_dummy)
 chain.register_backend2("Histothreshold", clustering3d.create_histoThreshold)
+chain.register_backend2("HistoMax", clustering3d.create_histoMax)
+chain.register_backend2("HistoMaxVarDR", clustering3d.create_histoMax_variableDr)
+chain.register_backend2("HistoInterpolatedMax", clustering3d.create_histoInterpolatedMax)
+chain.register_backend2("HistoInterpolatedMax1stOrder", clustering3d.create_histoInterpolatedMax1stOrder)
+chain.register_backend2("HistoInterpolatedMax2ndOrder", clustering3d.create_histoInterpolatedMax2ndOrder)
 # Register ntuples
 ntuple_list = ['event', 'gen', 'multiclusters']
 chain.register_ntuple("MultiClustersNtuple", lambda p,i : ntuple.create_ntuple(p,i, ntuple_list))
@@ -90,6 +95,11 @@ chain.register_ntuple("MultiClustersNtuple", lambda p,i : ntuple.create_ntuple(p
 chain.register_chain('Floatingpoint7', 'Supertriggercell', 'Dummy', 'Histothreshold', 'MultiClustersNtuple')
 chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'Histothreshold', 'MultiClustersNtuple')
 chain.register_chain('Floatingpoint7', 'Bestchoice', 'Dummy', 'Histothreshold', 'MultiClustersNtuple')
+chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'HistoMax', 'MultiClustersNtuple')
+chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'HistoMaxVarDR', 'MultiClustersNtuple')
+chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'HistoInterpolatedMax', 'MultiClustersNtuple')
+chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'HistoInterpolatedMax1stOrder', 'MultiClustersNtuple')
+chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'HistoInterpolatedMax2ndOrder', 'MultiClustersNtuple')
 
 process = chain.create_sequences(process)
 

@@ -1,12 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-binSums = cms.vuint32(13,               #0
-                      11, 11, 11,       # 1 - 3
-                      9, 9, 9,          # 4 - 6
-                      7, 7, 7, 7, 7, 7, # 7 - 12
-                      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,  # 13 - 27
-                      3, 3, 3, 3, 3, 3, 3, 3  # 28 - 35
-                      )
+from L1Trigger.L1THGCal.customClustering import binSums, dr_layerbylayer
 
 
 def create_distance(process, inputs,
@@ -36,14 +30,28 @@ def create_histoMax(process, inputs,
         nBins_R = 36,
         nBins_Phi = 216,
         binSumsHisto = binSums,                        
+        seed_threshold = 0,
         ):
     producer = process.hgcalBackEndLayer2Producer.clone() 
     producer.ProcessorParameters.C3d_parameters.dR_multicluster = cms.double(distance)
     producer.ProcessorParameters.C3d_parameters.nBins_R_histo_multicluster = cms.uint32(nBins_R)
     producer.ProcessorParameters.C3d_parameters.nBins_Phi_histo_multicluster = cms.uint32(nBins_Phi)
     producer.ProcessorParameters.C3d_parameters.binSumsHisto = binSumsHisto
+    producer.ProcessorParameters.C3d_parameters.threshold_histo_multicluster = seed_threshold
     producer.ProcessorParameters.C3d_parameters.type_multicluster = cms.string('HistoMaxC3d')
     producer.InputCluster = cms.InputTag('{}:HGCalBackendLayer1Processor2DClustering'.format(inputs))
+    return producer
+
+
+def create_histoMax_variableDr(process, inputs,
+        distances = dr_layerbylayer,
+        nBins_R = 36,
+        nBins_Phi = 216,
+        binSumsHisto = binSums,
+        seed_threshold = 0,
+        ):
+    producer = create_histoMax(process, inputs, 0, nBins_R, nBins_Phi, binSumsHisto, seed_threshold)
+    producer.ProcessorParameters.C3d_parameters.dR_multicluster_byLayer = cms.vdouble(distances)
     return producer
 
 
@@ -53,12 +61,12 @@ def create_histoInterpolatedMax(process, inputs,
         nBins_Phi = 216,
         binSumsHisto = binSums,
         ):
-    producer = create_histoMax( process, distance, nBins_R, nBins_Phi, binSumsHisto )    
+    producer = create_histoMax( process, inputs, distance, nBins_R, nBins_Phi, binSumsHisto )
     producer.ProcessorParameters.C3d_parameters.type_multicluster = cms.string('HistoInterpolatedMaxC3d')
     return producer
 
 def create_histoInterpolatedMax1stOrder(process, inputs):
-    producer = custom_3dclustering_histoInterpolatedMax( process )    
+    producer = create_histoInterpolatedMax( process, inputs )
     producer.ProcessorParameters.C3d_parameters.neighbour_weights=cms.vdouble(  0    , 0.25, 0   ,
                                                    0.25 , 0   , 0.25,
                                                    0    , 0.25, 0
@@ -68,7 +76,7 @@ def create_histoInterpolatedMax1stOrder(process, inputs):
 
 
 def create_histoInterpolatedMax2ndOrder(process, inputs):
-    producer = custom_3dclustering_histoInterpolatedMax( process )    
+    producer = create_histoInterpolatedMax( process,inputs )
     producer.ProcessorParameters.C3d_parameters.neighbour_weights=cms.vdouble( -0.25, 0.5, -0.25,
                                                    0.5 , 0  ,  0.5 ,
                                                   -0.25, 0.5, -0.25
