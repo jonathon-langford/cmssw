@@ -75,6 +75,5 @@ class HGCalTriggerChain:
         process.globalReplace('hgcalConcentrator', concentrator_sequence)
         process.globalReplace('hgcalBackEndLayer1', backend1_sequence)
         process.globalReplace('hgcalBackEndLayer2', backend2_sequence)
-        if ntuple!='':
-            process.globalReplace('hgcalTriggerNtuples', ntuple_sequence)
+        process.globalReplace('hgcalTriggerNtuples', ntuple_sequence)
         return process

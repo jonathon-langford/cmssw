@@ -16,8 +16,8 @@ def create_ntuple(process, inputs,
             'gen', 'genjet', 'gentau',
             'digis',
             'triggercells',
-            'clusters', 'multicluster',
-            'tower'
+            'clusters', 'multiclusters',
+            'towers'
             ]
         ):
     vpset = []
@@ -33,8 +33,7 @@ def create_ntuple(process, inputs,
             pset.Multiclusters = cms.InputTag('{}:HGCalBackendLayer2Processor3DClustering'.format(inputs[2]))
         vpset.append(pset)
     ntuplizer = process.hgcalTriggerNtuplizer.clone()
-    ntuplizer.Ntuples = cms.VPSet(*vpset)
-    print(ntuplizer.Ntuples)
+    ntuplizer.Ntuples = cms.VPSet(vpset)
     return ntuplizer
 
 
