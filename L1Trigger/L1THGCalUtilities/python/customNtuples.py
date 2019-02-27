@@ -16,8 +16,7 @@ def create_ntuple(process, inputs,
             'gen', 'genjet', 'gentau',
             'digis',
             'triggercells',
-            'clusters', 'multiclusters',
-            'towers'
+            'clusters', 'multiclusters'
             ]
         ):
     vpset = []
