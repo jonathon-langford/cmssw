@@ -8,6 +8,8 @@ def create_distance(process, inputs,
         ):
     producer = process.hgcalBackEndLayer2Producer.clone() 
     producer.ProcessorParameters.C3d_parameters.dR_multicluster = cms.double(distance)
+    producer.ProcessorParameters.C3d_parameters.dist_dbscan_multicluster=cms.double(0.)
+    producer.ProcessorParameters.C3d_parameters.minN_dbscan_multicluster=cms.uint32(0)
     producer.ProcessorParameters.C3d_parameters.type_multicluster = cms.string('dRC3d')
     producer.InputCluster = cms.InputTag('{}:HGCalBackendLayer1Processor2DClustering'.format(inputs))
     return producer
@@ -18,6 +20,7 @@ def create_dbscan(process, inputs,
         min_points=3
         ):
     producer = process.hgcalBackEndLayer2Producer.clone() 
+    producer.ProcessorParameters.C3d_parameters.dR_multicluster = cms.double(0.)
     producer.ProcessorParameters.C3d_parameters.dist_dbscan_multicluster = cms.double(distance)
     producer.ProcessorParameters.C3d_parameters.minN_dbscan_multicluster = cms.uint32(min_points)
     producer.ProcessorParameters.C3d_parameters.type_multicluster = cms.string('DBSCANC3d')
@@ -26,7 +29,7 @@ def create_dbscan(process, inputs,
 
 
 def create_histoMax(process, inputs,
-        distance = 0.01,
+        distance = 0.03,
         nBins_R = 36,
         nBins_Phi = 216,
         binSumsHisto = binSums,                        
@@ -56,7 +59,7 @@ def create_histoMax_variableDr(process, inputs,
 
 
 def create_histoInterpolatedMax(process, inputs,
-        distance = 0.01,
+        distance = 0.03,
         nBins_R = 36,
         nBins_Phi = 216,
         binSumsHisto = binSums,
@@ -87,7 +90,7 @@ def create_histoInterpolatedMax2ndOrder(process, inputs):
 
 def create_histoThreshold(process, inputs,
         threshold = 20.,
-        distance = 0.01,
+        distance = 0.03,
         nBins_R = 36,
         nBins_Phi = 216,
         binSumsHisto = binSums,

@@ -67,41 +67,48 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 # load HGCAL TPG simulation
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 process.load('L1Trigger.L1THGCalUtilities.hgcalTriggerNtuples_cff')
-from L1Trigger.L1THGCalUtilities.hgcalTriggerChain import HGCalTriggerChain
+from L1Trigger.L1THGCalUtilities.hgcalTriggerChains import HGCalTriggerChains
 import L1Trigger.L1THGCalUtilities.vfe as vfe
 import L1Trigger.L1THGCalUtilities.concentrator as concentrator
 import L1Trigger.L1THGCalUtilities.clustering2d as clustering2d
 import L1Trigger.L1THGCalUtilities.clustering3d as clustering3d
 import L1Trigger.L1THGCalUtilities.customNtuples as ntuple
 
-chain = HGCalTriggerChain()
+
+chains = HGCalTriggerChains()
 # Register algorithms
-chain.register_vfe("Floatingpoint7", lambda p : vfe.create_compression(p, 4, 3, True))
-chain.register_concentrator("Supertriggercell", concentrator.create_supertriggercell)
-chain.register_concentrator("Threshold", concentrator.create_threshold)
-chain.register_concentrator("Bestchoice", lambda p,i : concentrator.create_bestchoice(p,i, triggercells=12))
-chain.register_backend1("Dummy", clustering2d.create_dummy)
-chain.register_backend2("Histothreshold", clustering3d.create_histoThreshold)
-chain.register_backend2("HistoMax", clustering3d.create_histoMax)
-chain.register_backend2("HistoMaxVarDR", clustering3d.create_histoMax_variableDr)
-chain.register_backend2("HistoInterpolatedMax", clustering3d.create_histoInterpolatedMax)
-chain.register_backend2("HistoInterpolatedMax1stOrder", clustering3d.create_histoInterpolatedMax1stOrder)
-chain.register_backend2("HistoInterpolatedMax2ndOrder", clustering3d.create_histoInterpolatedMax2ndOrder)
+## VFE
+chains.register_vfe("Floatingpoint8", lambda p : vfe.create_compression(p, 4, 4, True))
+## ECON
+chains.register_concentrator("Supertriggercell", concentrator.create_supertriggercell)
+chains.register_concentrator("Threshold", concentrator.create_threshold)
+## BE1
+chains.register_backend1("Ref2d", clustering2d.create_constrainedtopological)
+chains.register_backend1("Dummy", clustering2d.create_dummy)
+## BE2
+chains.register_backend2("Ref3d", clustering3d.create_distance)
+chains.register_backend2("Histomax", clustering3d.create_histoMax)
+chains.register_backend2("Histomaxvardrth0", lambda p,i : clustering3d.create_histoMax_variableDr(p,i,seed_threshold=0.))
+chains.register_backend2("Histomaxvardrth10", lambda p,i : clustering3d.create_histoMax_variableDr(p,i,seed_threshold=10.))
+chains.register_backend2("Histomaxvardrth20", lambda p,i : clustering3d.create_histoMax_variableDr(p,i,seed_threshold=20.))
 # Register ntuples
-ntuple_list = ['event', 'gen', 'multiclusters']
-chain.register_ntuple("MultiClustersNtuple", lambda p,i : ntuple.create_ntuple(p,i, ntuple_list))
+# Store gen info only in the reference ntuple
+ntuple_list_ref = ['event', 'gen', 'multiclusters']
+ntuple_list = ['event', 'multiclusters']
+chains.register_ntuple("Genclustersntuple", lambda p,i : ntuple.create_ntuple(p,i, ntuple_list_ref))
+chains.register_ntuple("Clustersntuple", lambda p,i : ntuple.create_ntuple(p,i, ntuple_list))
 
-# Register trigger chain
-chain.register_chain('Floatingpoint7', 'Supertriggercell', 'Dummy', 'Histothreshold', 'MultiClustersNtuple')
-chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'Histothreshold', 'MultiClustersNtuple')
-chain.register_chain('Floatingpoint7', 'Bestchoice', 'Dummy', 'Histothreshold', 'MultiClustersNtuple')
-chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'HistoMax', 'MultiClustersNtuple')
-chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'HistoMaxVarDR', 'MultiClustersNtuple')
-chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'HistoInterpolatedMax', 'MultiClustersNtuple')
-chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'HistoInterpolatedMax1stOrder', 'MultiClustersNtuple')
-chain.register_chain('Floatingpoint7', 'Threshold', 'Dummy', 'HistoInterpolatedMax2ndOrder', 'MultiClustersNtuple')
+# Register trigger chains
+## Reference chain
+chains.register_chain('Floatingpoint8', "Threshold", 'Ref2d', 'Ref3d', 'Genclustersntuple')
+concentrator_algos = ['Supertriggercell', 'Threshold']
+backend_algos = ['Histomax', 'Histomaxvardrth0', 'Histomaxvardrth10', 'Histomaxvardrth20']
+## Make cross product fo ECON and BE algos
+import itertools
+for cc,be in itertools.product(concentrator_algos,backend_algos):
+    chains.register_chain('Floatingpoint8', cc, 'Dummy', be, 'Clustersntuple')
 
-process = chain.create_sequences(process)
+process = chains.create_sequences(process)
 
 # Remove towers from sequence
 process.hgcalTriggerPrimitives.remove(process.hgcalTowerMap)

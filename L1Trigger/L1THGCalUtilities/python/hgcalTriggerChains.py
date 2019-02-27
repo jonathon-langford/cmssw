@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-class HGCalTriggerChain:
+class HGCalTriggerChains:
     def __init__(self):
         self.vfe = {}
         self.concentrator = {}
