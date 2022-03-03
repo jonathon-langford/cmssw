@@ -316,17 +316,22 @@ void HGCalHistoClusteringImplSA::calculateAveragePosition( HGCalHistogramCellSAP
 }
 
 void HGCalHistoClusteringImplSA::clusterizer( HGCalTriggerCellSAPtrCollection& triggerCellsIn, HGCalHistogramCellSAPtrCollection& histogram, HGCalTriggerCellSAPtrCollection& clusteredTriggerCellsOut, HGCalTriggerCellSAPtrCollection& unclusteredTriggerCellsOut, CentroidHelperPtrCollection& prioritizedMaxima, CentroidHelperPtrCollection& readoutFlagsOut ) const {
+
   
   unsigned int seedCounter = 0;
   vector< CentroidHelperPtrCollection > fifos( 18, CentroidHelperPtrCollection() ); // Magic numbers
   vector<unsigned int> clock( config_.cColumns(), config_.clusterizerMagicTime() );
   CentroidHelperPtrCollection latched( 18+1, make_shared<CentroidHelper>() ); // Magic numbers
 
+
   HGCalTriggerCellSAPtrCollections clusteredTriggerCells( config_.cColumns(), HGCalTriggerCellSAPtrCollection() );
   HGCalTriggerCellSAPtrCollections unclusteredTriggerCells( config_.cColumns(), HGCalTriggerCellSAPtrCollection() );
   CentroidHelperPtrCollections readoutFlags( config_.cColumns(), CentroidHelperPtrCollection() );
 
+
+
   HGCalTriggerCellSAPtrCollectionss triggerCellBuffers( config_.cColumns(), HGCalTriggerCellSAPtrCollections( config_.cRows(), HGCalTriggerCellSAPtrCollection() ) );
+  std::cout << std::endl << "TriggerCellsIn has size: " << triggerCellsIn.size() << std::endl;
   for (const auto& tc : triggerCellsIn ) {
     triggerCellBuffers.at( tc->index() ).at( tc->sortKey() ).push_back( tc );
   }
@@ -421,13 +426,16 @@ void HGCalHistoClusteringImplSA::clusterizer( HGCalTriggerCellSAPtrCollection& t
       }
     }
 
+ 
     for ( const auto& a : accepted ) {
       if ( a->dataValid() ) {
         unsigned int dR2Cut = 20000; // Magic numbers
         unsigned int T=0; // Magic numbers
-
+        
         for ( unsigned int iCol = a->column() - 3; iCol < a->column() + 4; ++iCol ) { // Magic numbers
+
           clock[ iCol ] += 8; // Magic numbers
+
           for ( int k = -2; k < 3; ++k ) { // Magic numbers
             int row = a->row() + k;
             if ( row < 0 ) continue;
@@ -436,6 +444,14 @@ void HGCalHistoClusteringImplSA::clusterizer( HGCalTriggerCellSAPtrCollection& t
               clock[iCol] += 1 ;
               continue;
             }
+
+            // Skip bins outside histogram edges
+            if ( row >= int(triggerCellBuffers[iCol].size()) ) {
+              std::cout << "    --> Attempting to access row ("<< row <<") which is outside size of triggerCellBuffer. Skipping" << std::endl;
+              clock[iCol] += 1 ;
+              continue;
+            }
+
 
             for ( auto& tc : triggerCellBuffers[iCol][row] ) {
               clock[iCol] += 1 ;
@@ -483,6 +499,7 @@ void HGCalHistoClusteringImplSA::clusterizer( HGCalTriggerCellSAPtrCollection& t
           }
         }
 
+
         for ( unsigned int iCol = a->column() - 3; iCol < a->column() + 4; ++iCol ) { // Magic numbers
           clock[iCol] = T+1;
 
@@ -496,6 +513,7 @@ void HGCalHistoClusteringImplSA::clusterizer( HGCalTriggerCellSAPtrCollection& t
       }
     }
   }
+
 
   for ( unsigned int i = 0; i <1000; ++i ) { // Magic numbers
     for ( unsigned int iCol = 0; iCol < config_.cColumns(); ++iCol ) {
@@ -670,13 +688,17 @@ std::pair< unsigned int, unsigned int > HGCalHistoClusteringImplSA::sigma_Energy
   unsigned long int N = N_TC_W*Sum_W2 - pow(Sum_W,2);
   unsigned long int D = pow(N_TC_W,2);
   double intpart;
-  double frac =  modf(sqrt(N/D),&intpart)*pow(2,1);
+  //double frac =  modf(sqrt(N/D),&intpart)*pow(2,1);
+  // Check: save larger number of bits for frac
+  double frac =  modf(sqrt(N/D),&intpart)*pow(2,8);
   return { (unsigned int)intpart, (unsigned int)frac };
 }
 
 std::pair< unsigned int, unsigned int > HGCalHistoClusteringImplSA::mean_coordinate(unsigned int Sum_Wc, unsigned int Sum_W) const {
   double intpart;
-  double frac =  modf((double)Sum_Wc/Sum_W,&intpart)*pow(2,2);
+  //double frac =  modf((double)Sum_Wc/Sum_W,&intpart)*pow(2,2);
+  // Check: save larger number of bits for frac
+  double frac =  modf((double)Sum_Wc/Sum_W,&intpart)*pow(2,8);
   return { (unsigned int)intpart, (unsigned int)frac };
 }
 
@@ -684,7 +706,9 @@ std::pair< unsigned int, unsigned int > HGCalHistoClusteringImplSA::sigma_Coordi
   unsigned long int N = Sum_W*Sum_Wc2 - pow(Sum_Wc,2);
   unsigned long int D = pow(Sum_W,2);
   double intpart;
-  double frac =  modf((double)sqrt(N/D),&intpart)*pow(2,1);
+  //double frac =  modf((double)sqrt(N/D),&intpart)*pow(2,1);
+  // Check: save larger number of bits for frac
+  double frac =  modf((double)sqrt(N/D),&intpart)*pow(2,8);
   return { (unsigned int)intpart, (unsigned int)frac };
 }
 

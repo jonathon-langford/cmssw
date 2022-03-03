@@ -24,12 +24,14 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(50)
+    input = cms.untracked.int32(5)
 )
 
 # Input source
 process.source = cms.Source("PoolSource",
-       fileNames = cms.untracked.vstring('/store/mc/Phase2HLTTDRWinter20DIGI/SingleElectron_PT2to200/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3_ext2-v2/40000/00582F93-5A2A-5847-8162-D81EE503500F.root'),
+       #fileNames = cms.untracked.vstring('/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/DoublePhoton_FlatPt-1To100/FEVT/PU200_111X_mcRun4_realistic_T15_v1_ext1-v2/1020000/628810DA-626E-D649-BA7D-121F9FE4DAEC.root'), #WORKS!
+       fileNames = cms.untracked.vstring('/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/DoublePhoton_FlatPt-1To100/FEVT/PU200_111X_mcRun4_realistic_T15_v1_ext1-v2/1210000/F2E5E947-0CB4-D245-A943-17F2F05709D3.root'), #DOESN'T WORK
+       skipEvents = cms.untracked.uint32(44),
        inputCommands=cms.untracked.vstring(
            'keep *',
            'drop l1tEMTFHit2016Extras_simEmtfDigis_CSC_HLT',
@@ -59,7 +61,7 @@ process.configurationMetadata = cms.untracked.PSet(
 # Output definition
 process.TFileService = cms.Service(
     "TFileService",
-    fileName = cms.string("ntuple.root")
+    fileName = cms.string("ntuple_newprocessors_skimmed.root")
     )
 
 # Other statements
@@ -76,6 +78,9 @@ process = custom_tower_standalone(process)
 
 process.hgcl1tpg_step = cms.Path(process.hgcalTriggerPrimitives)
 
+# Change to custom geometry
+from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_V11_Imp3
+process = custom_geometry_V11_Imp3(process)
 
 # load ntuplizer
 process.load('L1Trigger.L1THGCalUtilities.hgcalTriggerNtuples_cff')
