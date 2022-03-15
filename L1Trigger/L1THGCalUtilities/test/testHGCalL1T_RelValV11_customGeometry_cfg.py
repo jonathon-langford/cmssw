@@ -1,4 +1,4 @@
-import FWCore.ParameterSet.Config as cms 
+import FWCore.ParameterSet.Config as cms
 
 from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
 process = cms.Process('DIGI',Phase2C9)
@@ -29,9 +29,7 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-       #fileNames = cms.untracked.vstring('/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/DoublePhoton_FlatPt-1To100/FEVT/PU200_111X_mcRun4_realistic_T15_v1_ext1-v2/1020000/628810DA-626E-D649-BA7D-121F9FE4DAEC.root'), #WORKS!
-       fileNames = cms.untracked.vstring('/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/DoublePhoton_FlatPt-1To100/FEVT/PU200_111X_mcRun4_realistic_T15_v1_ext1-v2/1210000/F2E5E947-0CB4-D245-A943-17F2F05709D3.root'), #DOESN'T WORK
-       #skipEvents = cms.untracked.uint32(44),
+       fileNames = cms.untracked.vstring('/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/DoublePhoton_FlatPt-1To100/FEVT/PU200_111X_mcRun4_realistic_T15_v1_ext1-v2/1210000/F2E5E947-0CB4-D245-A943-17F2F05709D3.root'),
        inputCommands=cms.untracked.vstring(
            'keep *',
            'drop l1tEMTFHit2016Extras_simEmtfDigis_CSC_HLT',
@@ -45,8 +43,7 @@ process.source = cms.Source("PoolSource",
            'drop BTLDetIdBTLSampleFTLDataFrameTsSorted_mix_FTLBarrel_HLT',
            'drop ETLDetIdETLSampleFTLDataFrameTsSorted_mix_FTLEndcap_HLT',
            )
-       )
-
+        )
 process.options = cms.untracked.PSet(
 
 )
@@ -61,7 +58,7 @@ process.configurationMetadata = cms.untracked.PSet(
 # Output definition
 process.TFileService = cms.Service(
     "TFileService",
-    fileName = cms.string("ntuple_newprocessors_skimmed.root")
+    fileName = cms.string("ntuple_customGeometry_skimmed.root")
     )
 
 # Other statements
@@ -71,11 +68,6 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', ''
 # load HGCAL TPG simulation
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 
-# Use new processors and standalone algorithms
-from L1Trigger.L1THGCal.customNewProcessors import custom_clustering_standalone, custom_tower_standalone
-process = custom_clustering_standalone(process)
-process = custom_tower_standalone(process)
-
 process.hgcl1tpg_step = cms.Path(process.hgcalTriggerPrimitives)
 
 # Change to custom geometry
@@ -84,9 +76,6 @@ process = custom_geometry_V11_Imp3(process)
 
 # load ntuplizer
 process.load('L1Trigger.L1THGCalUtilities.hgcalTriggerNtuples_cff')
-from L1Trigger.L1THGCalUtilities.customNtuples import custom_ntuples_standalone_clustering, custom_ntuples_standalone_tower
-process = custom_ntuples_standalone_clustering(process)
-process = custom_ntuples_standalone_tower(process)
 process.ntuple_step = cms.Path(process.hgcalTriggerNtuples)
 
 # Schedule definition
@@ -96,4 +85,3 @@ process.schedule = cms.Schedule(process.hgcl1tpg_step, process.ntuple_step)
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
 # End adding early deletion
-
