@@ -158,6 +158,8 @@ namespace l1t {
     float layer90percent() const { return layer90percent_; }
     float triggerCells67percent() const { return triggerCells67percent_; }
     float triggerCells90percent() const { return triggerCells90percent_; }
+    float rhoROverZvsZ() const { return rhoROverZvsZ_; }
+    float rhoPhivsZ() const { return rhoPhivsZ_; }
 
     void showerLength(int showerLength) { showerLength_ = showerLength; }
     void coreShowerLength(int coreShowerLength) { coreShowerLength_ = coreShowerLength; }
@@ -178,6 +180,8 @@ namespace l1t {
     void layer90percent(float layer90percent) { layer90percent_ = layer90percent; }
     void triggerCells67percent(float triggerCells67percent) { triggerCells67percent_ = triggerCells67percent; }
     void triggerCells90percent(float triggerCells90percent) { triggerCells90percent_ = triggerCells90percent; }
+    void rhoROverZvsZ(float rhoROverZvsZ) { rhoROverZvsZ_ = rhoROverZvsZ; }
+    void rhoPhivsZ(float rhoPhivsZ) { rhoPhivsZ_ = rhoPhivsZ; }
 
     // firmware-specific cluster properties
     unsigned long int Sigma_E_Quotient()  const { return Sigma_E_Quotient_SA_; }
@@ -271,6 +275,8 @@ namespace l1t {
     float layer90percent_ = 0.;
     float triggerCells67percent_ = 0.;
     float triggerCells90percent_ = 0.;
+    float rhoROverZvsZ_ = 0.;
+    float rhoPhivsZ_ = 0.;
 
     // firmware specific cluster properties
     unsigned long int Sigma_E_Quotient_SA_ = 0;

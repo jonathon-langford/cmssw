@@ -52,10 +52,14 @@ public:
   float sigmaRRMax(const l1t::HGCalMulticluster& c3d) const;
   float sigmaRRMean(const l1t::HGCalMulticluster& c3d, float radius = 5.) const;
 
+  float rhoROverZvsZ(const l1t::HGCalMulticluster& c3d) const;
+  float rhoPhivsZ(const l1t::HGCalMulticluster& c3d) const;
+
   void fillShapes(l1t::HGCalMulticluster&, const HGCalTriggerGeometryBase&) const;
 
 private:
   float meanX(const std::vector<pair<float, float>>& energy_X_tc) const;
+  float rhoXY(const std::vector<pair<float, float>>& tc_X_Y) const;
   // Compute energy-weighted RMS of any variable X in the cluster
   // Delta(a,b) functor as template argument. Default is (a-b)
   template <typename Delta = std::minus<float>>
