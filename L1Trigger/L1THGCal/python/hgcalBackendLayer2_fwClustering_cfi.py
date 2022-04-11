@@ -46,9 +46,12 @@ layer2ClusteringFw_Params = cms.PSet(
     # Threshold maxima parameters
     # Threshold for given histogram row (r/z bin) paramaterized as a+b*bin+c*bin^2
     thresholdMaximaParams = cms.PSet(
-        a=cms.uint32(18000),
-        b=cms.uint32(800),
-        c=cms.int32(-20)
+        #a=cms.uint32(18000),
+        a=cms.uint32(5000),
+        #b=cms.uint32(800),
+        #c=cms.int32(-20)
+        b=cms.uint32(0),
+        c=cms.int32(0)
     ),
     clusterizerMagicTime=cms.uint32(434),
     nBinsCosLUT = cms.uint32(77), # Number of entries in 1-cos(delta phi) LUT when clustering to seeds

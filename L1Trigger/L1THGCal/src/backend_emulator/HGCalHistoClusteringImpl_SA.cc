@@ -313,7 +313,7 @@ void HGCalHistoClusteringImplSA::thresholdMaximaFinder( HGCalHistogramCellSAPtrC
 // Temporary simulation of local maxima finder
 // Not an emulation of any firmware
 void HGCalHistoClusteringImplSA::localMaximaFinder( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const {
-  const std::vector<unsigned> maximaWidths{ 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+  const std::vector<unsigned> maximaWidths{ 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
 
   for ( auto& hc : histogram ) {
@@ -321,8 +321,12 @@ void HGCalHistoClusteringImplSA::localMaximaFinder( l1thgcfirmware::HGCalHistogr
       const int colRef = hc->index();
       const int rowRef = hc->sortKey();
       bool isMaxima = true;
-      // std::cout << "Got a histo cell : " << hc->index() << " " << hc->sortKey() << " " << hc->S() << std::endl;
-      // std::cout << "Phi range : " << maximaWidths.at(hc->sortKey()) << std::endl;
+      //std::cout << "Got a histo cell : " << hc->index() << " " << hc->sortKey() << " " << hc->S() << std::endl;
+      //std::cout << "Phi range : " << maximaWidths.at(hc->sortKey()) << std::endl;
+      if( int(hc->sortKey()) >= int(maximaWidths.size()) ){
+        std::cout << " --> Histo cell with index (" << hc->sortKey() << ") outside the maximaWidths range (" << int(maximaWidths.size()) << "). Skipping." << std::endl;
+        continue;
+      }
       const int phiRange = maximaWidths.at(hc->sortKey());
       for ( int colOffset = -1 * phiRange; colOffset <= phiRange; ++colOffset ) {
         const int col = colRef + colOffset;
