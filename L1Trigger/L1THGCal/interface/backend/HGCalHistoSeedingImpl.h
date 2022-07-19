@@ -14,10 +14,12 @@
 class HGCalHistoSeedingImpl {
 private:
   struct Bin {
-    enum Content { Sum, Ecal, Hcal };
-    std::array<float, 3> values = {{0., 0., 0.}};
+    enum Content { Sum, Ecal, Hcal, SumGeV, EcalGeV, HcalGeV };
+    std::array<float, 6> values = {{0., 0., 0., 0., 0., 0.}};
     float weighted_x = 0.;
     float weighted_y = 0.;
+    float weighted_x_GeV = 0.;
+    float weighted_y_GeV = 0.;
   };
   template <typename T>
   class HistogramT {
@@ -151,6 +153,8 @@ private:
   unsigned nBins2_ = 216;
   std::vector<unsigned> binsSumsHisto_;
   double histoThreshold_ = 20.;
+  double histoThreshold_inGeV_ = 0.4;
+  bool use_threshold_inGeV_ = false;
   static constexpr double area_per_triggercell_ =
       4.91E-05;  // Hex_Wafer_Area (x/z units)/N_TC (per wafer) = (0.866*((hexWafer_minimal_diameter)*(1./319.))^2 / 48)
   std::vector<double> neighbour_weights_;

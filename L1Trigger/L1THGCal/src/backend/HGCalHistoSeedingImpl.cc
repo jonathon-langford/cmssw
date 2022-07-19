@@ -10,6 +10,8 @@ HGCalHistoSeedingImpl::HGCalHistoSeedingImpl(const edm::ParameterSet& conf)
       nBins2_(conf.getParameter<unsigned>("nBins_X2_histo_multicluster")),
       binsSumsHisto_(conf.getParameter<std::vector<unsigned>>("binSumsHisto")),
       histoThreshold_(conf.getParameter<double>("threshold_histo_multicluster")),
+      histoThreshold_inGeV_(conf.getParameter<double>("threshold_histo_multicluster_inGeV")),
+      use_threshold_inGeV_(conf.getParameter<bool>("use_threshold_inGeV")),
       neighbour_weights_(conf.getParameter<std::vector<double>>("neighbour_weights")),
       smoothing_ecal_(conf.getParameter<std::vector<double>>("seed_smoothing_ecal")),
       smoothing_hcal_(conf.getParameter<std::vector<double>>("seed_smoothing_hcal")),
@@ -45,6 +47,12 @@ HGCalHistoSeedingImpl::HGCalHistoSeedingImpl(const edm::ParameterSet& conf)
   } else {
     throw cms::Exception("HGCTriggerParameterError")
         << "Unknown seeding space  '" << conf.getParameter<std::string>("seeding_space");
+  }
+
+  if( use_threshold_inGeV_ ){
+    std::cout << " [DEBUG] --> Multicluster GeV threshold for histo threshold algorithm: " << histoThreshold_inGeV_ << std::endl;
+  } else {
+    std::cout << " [DEBUG] --> Multicluster MIPT threshold for histo threshold algorithm: " << histoThreshold_ << std::endl;
   }
 
   edm::LogInfo("HGCalMulticlusterParameters")
@@ -108,18 +116,26 @@ HGCalHistoSeedingImpl::Histogram HGCalHistoSeedingImpl::fillHistoClusters(
 
     auto& bin = histoClusters.at(triggerTools_.zside(clu->detId()), bin1, bin2);
     bin.values[Bin::Content::Sum] += clu->mipPt();
+    bin.values[Bin::Content::SumGeV] += clu->pt();
     if (triggerTools_.isEm(clu->detId())) {
       bin.values[Bin::Content::Ecal] += clu->mipPt();
+      bin.values[Bin::Content::EcalGeV] += clu->pt();
     } else {
       bin.values[Bin::Content::Hcal] += clu->mipPt();
+      bin.values[Bin::Content::HcalGeV] += clu->pt();
     }
     bin.weighted_x += (clu->centreProj().x()) * clu->mipPt();
     bin.weighted_y += (clu->centreProj().y()) * clu->mipPt();
+    bin.weighted_x_GeV += (clu->centreProj().x()) * clu->pt();
+    bin.weighted_y_GeV += (clu->centreProj().y()) * clu->pt();
+
   }
 
   for (auto& bin : histoClusters) {
     bin.weighted_x /= bin.values[Bin::Content::Sum];
     bin.weighted_y /= bin.values[Bin::Content::Sum];
+    bin.weighted_x_GeV /= bin.values[Bin::Content::SumGeV];
+    bin.weighted_y_GeV /= bin.values[Bin::Content::SumGeV];
   }
 
   return histoClusters;
@@ -192,6 +208,7 @@ HGCalHistoSeedingImpl::Histogram HGCalHistoSeedingImpl::fillSmoothPhiHistoCluste
       for (unsigned bin2 = 0; bin2 < nBins2_; bin2++) {
         const auto& bin_orig = histoClusters.at(z_side, bin1, bin2);
         float content = bin_orig.values[Bin::Content::Sum];
+        float content_GeV = bin_orig.values[Bin::Content::SumGeV];
 
         for (int bin22 = 1; bin22 <= nBinsSide; bin22++) {
           int binToSumLeft = bin2 - bin22;
@@ -203,15 +220,25 @@ HGCalHistoSeedingImpl::Histogram HGCalHistoSeedingImpl::fillSmoothPhiHistoCluste
 
           content += histoClusters.at(z_side, bin1, binToSumLeft).values[Bin::Content::Sum] /
                      pow(2, bin22);  // quadratic kernel
+          content_GeV += histoClusters.at(z_side, bin1, binToSumLeft).values[Bin::Content::SumGeV] /
+                     pow(2, bin22);  // quadratic kernel
+
 
           content += histoClusters.at(z_side, bin1, binToSumRight).values[Bin::Content::Sum] /
                      pow(2, bin22);  // quadratic kernel
+          content_GeV += histoClusters.at(z_side, bin1, binToSumRight).values[Bin::Content::SumGeV] /
+                     pow(2, bin22);  // quadratic kernel
+
         }
 
         auto& bin = histoSumPhiClusters.at(z_side, bin1, bin2);
         bin.values[Bin::Content::Sum] = (content / area) * area_per_triggercell_;
         bin.weighted_x = bin_orig.weighted_x;
         bin.weighted_y = bin_orig.weighted_y;
+        bin.values[Bin::Content::SumGeV] = (content_GeV / area) * area_per_triggercell_;
+        bin.weighted_x_GeV = bin_orig.weighted_x_GeV;
+        bin.weighted_y_GeV = bin_orig.weighted_y_GeV;
+
       }
     }
   }
@@ -233,10 +260,18 @@ HGCalHistoSeedingImpl::Histogram HGCalHistoSeedingImpl::fillSmoothRPhiHistoClust
         float contentDown = bin1 > 0 ? histoClusters.at(z_side, bin1 - 1, bin2).values[Bin::Content::Sum] : 0;
         float contentUp = bin1 < (nBins1_ - 1) ? histoClusters.at(z_side, bin1 + 1, bin2).values[Bin::Content::Sum] : 0;
 
+        float content_GeV = bin_orig.values[Bin::Content::SumGeV];
+        float contentDown_GeV = bin1 > 0 ? histoClusters.at(z_side, bin1 - 1, bin2).values[Bin::Content::SumGeV] : 0;
+        float contentUp_GeV = bin1 < (nBins1_ - 1) ? histoClusters.at(z_side, bin1 + 1, bin2).values[Bin::Content::SumGeV] : 0;
+
         auto& bin = histoSumRPhiClusters.at(z_side, bin1, bin2);
         bin.values[Bin::Content::Sum] = (content + 0.5 * contentDown + 0.5 * contentUp) / weight;
         bin.weighted_x = bin_orig.weighted_x;
         bin.weighted_y = bin_orig.weighted_y;
+        bin.values[Bin::Content::SumGeV] = (content_GeV + 0.5 * contentDown_GeV + 0.5 * contentUp_GeV) / weight;
+        bin.weighted_x_GeV = bin_orig.weighted_x_GeV;
+        bin.weighted_y_GeV = bin_orig.weighted_y_GeV;
+
       }
     }
   }
@@ -284,7 +319,13 @@ std::vector<std::pair<GlobalPoint, double>> HGCalHistoSeedingImpl::computeMaxSee
     for (unsigned bin1 = 0; bin1 < nBins1_; bin1++) {
       for (unsigned bin2 = 0; bin2 < nBins2_; bin2++) {
         float MIPT_seed = histoClusters.at(z_side, bin1, bin2).values[Bin::Content::Sum];
-        bool isMax = MIPT_seed > histoThreshold_;
+        float GeV_seed = histoClusters.at(z_side, bin1, bin2).values[Bin::Content::SumGeV];
+        bool isMax;
+        if( use_threshold_inGeV_ ){
+          isMax = GeV_seed > histoThreshold_inGeV_;
+        } else {
+          isMax = MIPT_seed > histoThreshold_;
+        }
         if (!isMax)
           continue;
 

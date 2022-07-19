@@ -33,6 +33,9 @@ namespace l1thgcfirmware {
 
     void setParameters() {}
 
+    void setVariablePhiWidth( const bool variablePhiWidth ) { variablePhiWidth_ = variablePhiWidth; }
+    bool variablePhiWidth() const { return variablePhiWidth_; }
+
     void setSector( const unsigned int sector ) { sector_ = sector; }
     unsigned int sector() const { return sector_; }
 
@@ -156,6 +159,8 @@ namespace l1thgcfirmware {
     void initializeSmearingKernelConstants( unsigned int bins, unsigned int offset, unsigned int height );
     void initializeThresholdMaximaConstants( unsigned int bins, unsigned int a, unsigned int b, int c );
     void initializeCosLUT();
+
+    bool variablePhiWidth_;
 
     unsigned int histogramOffset_;
     unsigned int clusterizerOffset_;

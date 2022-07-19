@@ -2,6 +2,8 @@ import FWCore.ParameterSet.Config as cms
 from math import pi
 
 layer2ClusteringFw_Params = cms.PSet(
+    # Variable phi width for seeding
+    variablePhiWidth = cms.bool(True),
     # Latencies
     # histogramOffset=cms.uint32(216),
     clusterizerOffset=cms.uint32(276),

@@ -313,8 +313,15 @@ void HGCalHistoClusteringImplSA::thresholdMaximaFinder( HGCalHistogramCellSAPtrC
 // Temporary simulation of local maxima finder
 // Not an emulation of any firmware
 void HGCalHistoClusteringImplSA::localMaximaFinder( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const {
-  const std::vector<unsigned> maximaWidths{ 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
+  std::vector<unsigned> maximaWidths;
+
+  if ( config_.variablePhiWidth() ){ 
+    maximaWidths.insert(maximaWidths.end(), { 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 } );
+  } else {
+    maximaWidths.insert(maximaWidths.end(), { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 } );
+  }
+  //std::cout << "[JONNO DEBUG] maximaWidths = " << maximaWidths[0] << std::endl; 
 
   for ( auto& hc : histogram ) {
     if ( hc->S() > 0 ) {

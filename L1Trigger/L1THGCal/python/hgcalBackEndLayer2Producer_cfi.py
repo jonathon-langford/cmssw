@@ -80,6 +80,8 @@ histoMax_C3d_seeding_params = cms.PSet(type_histoalgo=cms.string('HistoMaxC3d'),
                                kROverZMin=cms.double(0.076),
                                kROverZMax=cms.double(0.58),
                                threshold_histo_multicluster=cms.double(20.),
+                               threshold_histo_multicluster_inGeV=cms.double(0.6),
+                               use_threshold_inGeV=cms.bool(False),
                                neighbour_weights=neighbour_weights_1stOrder,
                                seed_position=cms.string("TCWeighted"),#BinCentre, TCWeighted
                                seeding_space=cms.string("RPhi"),# RPhi, XY

@@ -4,6 +4,7 @@
 using namespace std;
 using namespace l1thgcfirmware;
 ClusterAlgoConfig::ClusterAlgoConfig() :
+  variablePhiWidth_(true),
   clusterizerOffset_(0),
   cClocks_(0),
   cInputs_(0),

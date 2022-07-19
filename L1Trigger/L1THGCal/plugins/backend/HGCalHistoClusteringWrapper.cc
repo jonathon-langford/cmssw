@@ -264,6 +264,7 @@ void HGCalHistoClusteringWrapper::configure(
 
   const edm::ParameterSet pset = std::get<1>(configuration).getParameterSet("C3d_parameters").getParameterSet("histoMax_C3d_clustering_parameters").getParameterSet("layer2FwClusteringParameters");
 
+  theConfiguration_.setVariablePhiWidth( pset.getParameter<bool>("variablePhiWidth"));
   theConfiguration_.setClusterizerOffset( pset.getParameter<unsigned int>("clusterizerOffset"));
   theConfiguration_.setStepLatencies( pset.getParameter<std::vector<unsigned int>>("stepLatencies"));
   theConfiguration_.setCClocks( pset.getParameter<unsigned int>("cClocks") );
