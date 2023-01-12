@@ -5,10 +5,11 @@ from L1Trigger.L1THGCal.hgcalVFE_cff import *
 from L1Trigger.L1THGCal.hgcalConcentrator_cff import *
 from L1Trigger.L1THGCal.hgcalBackEndLayer1_cff import *
 from L1Trigger.L1THGCal.hgcalBackEndLayer2_cff import *
+from L1Trigger.L1THGCal.hgcalQuantizedCluster_cff import *
 from L1Trigger.L1THGCal.hgcalTowerMap_cff import *
 from L1Trigger.L1THGCal.hgcalTower_cff import *
 
-hgcalTriggerPrimitivesTask = cms.Task(hgcalVFE, hgcalConcentrator, hgcalBackEndLayer1, hgcalBackEndLayer2, hgcalTowerMap, hgcalTower)
+hgcalTriggerPrimitivesTask = cms.Task(hgcalVFE, hgcalConcentrator, hgcalBackEndLayer1, hgcalBackEndLayer2, hgcalQuantizedCluster, hgcalTowerMap, hgcalTower)
 hgcalTriggerPrimitives = cms.Sequence(hgcalTriggerPrimitivesTask)
 
 _hfnose_hgcalTriggerPrimitivesTask = hgcalTriggerPrimitivesTask.copy()

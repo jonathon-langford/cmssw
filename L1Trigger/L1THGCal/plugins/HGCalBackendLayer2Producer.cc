@@ -56,6 +56,9 @@ void HGCalBackendLayer2Producer::beginRun(const edm::Run& /*run*/, const edm::Ev
 }
 
 void HGCalBackendLayer2Producer::produce(edm::Event& e, const edm::EventSetup& es) {
+
+  std::cout << "[HGCalBackendLayer2Producer] Here" << std::endl;
+
   // Output collections
   std::pair<l1t::HGCalMulticlusterBxCollection, l1t::HGCalClusterBxCollection> be_output;
 
